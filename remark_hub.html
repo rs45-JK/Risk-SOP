@@ -842,7 +842,7 @@
 <div class="tab-nav">
     <div class="rs-inline" id="tgInputBar">
         <span class="rs-inline-label">RS:</span>
-        <input type="text" id="tgNumberInput" class="rs-inline-input" placeholder="##" oninput="updateTGNumbers()">
+        <span class="rs-inline-input" id="rsAutoDisplay" style="display:inline-flex;align-items:center;padding:0 6px;font-weight:600;color:var(--accent);letter-spacing:0.04em;font-size:0.85rem;">—</span>
     </div>
     <button class="tab-btn active" onclick="switchTab('tg-chat', event)">📱 TG Chat</button>
     <button class="tab-btn" onclick="switchTab('risk-remark', event)">✍️ Risk Remark</button>
@@ -1161,14 +1161,27 @@
         "Hi team upon checking this account is for further checking. Wait for our superior decision. Thank you - rs__",
     ];
 
+    function getSessionRS() {
+        try {
+            const raw = localStorage.getItem('secure_auth_session');
+            if (!raw) return null;
+            const s = JSON.parse(raw);
+            // Extract username part before @  e.g. "rs45@casinomcw.com" → "rs45"
+            return (s.email || '').split('@')[0].trim() || null;
+        } catch { return null; }
+    }
+
     function updateTGNumbers() {
-        const input = document.getElementById('tgNumberInput');
-        const numberInput = input.value.trim();
-        const number = numberInput ? `rs${numberInput}` : 'rs__';
+        const rsUser = getSessionRS();
+        const number = rsUser || 'rs__';
+        // Update the display badge
+        const display = document.getElementById('rsAutoDisplay');
+        if (display) display.textContent = number;
         data.tg = TG_TEMPLATES.map(t => t.replace(/rs__/g, number));
         if (currentTab === 'tg') renderList('tg');
     }
 
+    updateTGNumbers();
     renderList('tg');
     renderList('risk');
 
