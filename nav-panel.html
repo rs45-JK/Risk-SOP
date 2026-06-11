@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RemarkHub Nav</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700;800&display=swap');
+
+        :root {
+            --bg: #0d1117;
+            --bg2: #111820;
+            --card: #1a2130;
+            --accent: #3db8a8;
+            --accent2: #2e9e90;
+            --accent-dim: rgba(61,184,168,0.1);
+            --accent-glow: rgba(61,184,168,0.18);
+            --text-main: #c8d3dc;
+            --text-dim: #566370;
+            --text-mid: #6e7f8d;
+            --border: #1e2730;
+            --border-accent: rgba(61,184,168,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* ── Brand header ── */
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 16px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
+            flex-shrink: 0;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--accent), #00a896);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 14px var(--accent-glow);
+            flex-shrink: 0;
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%,100% { box-shadow: 0 0 8px var(--accent-glow); }
+            50% { box-shadow: 0 0 18px rgba(61,184,168,0.32); }
+        }
+
+        .brand-icon svg { width: 18px; height: 18px; fill: #0d1117; }
+
+        .brand-name {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--text-main);
+            line-height: 1;
+        }
+        .brand-name span { color: var(--accent); }
+        .brand-sub {
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            margin-top: 3px;
+        }
+
+        .close-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 5px 9px;
+            border-radius: 7px;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+        .close-btn:hover {
+            color: var(--accent);
+            border-color: var(--border-accent);
+            background: var(--accent-dim);
+        }
+
+        /* ── Nav area ── */
+        nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) var(--bg);
+        }
+
+        /* Section label */
+        .nav-section-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            padding: 10px 18px 4px;
+            margin-top: 4px;
+        }
+
+        /* Nav item */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            margin: 1px 8px;
+            border-radius: 8px;
+            user-select: none;
+        }
+
+        .nav-item:hover {
+            background: var(--accent-dim);
+            border-left-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .nav-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover .nav-icon {
+            background: var(--accent-dim);
+            border-color: var(--border-accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .nav-label { flex: 1; }
+
+        .nav-badge {
+            background: var(--accent);
+            color: #0d1117;
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .nav-ext {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        /* About expandable */
+        .about-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            margin: 1px 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .about-toggle:hover {
+            background: var(--accent-dim);
+            border-left-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .about-arrow {
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            transition: transform 0.25s;
+            margin-left: auto;
+        }
+        .about-arrow.open { transform: rotate(90deg); }
+
+        .about-body {
+            display: none;
+            flex-direction: column;
+            gap: 7px;
+            padding: 10px 16px 12px 56px;
+            background: rgba(0,229,200,0.03);
+            border-left: 3px solid var(--accent);
+            margin: 0 8px 4px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .about-body.open { display: flex; }
+        .about-body hr { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+        .about-body .ver { font-size: 0.72rem; color: #444; }
+
+        /* ── Pages section ── */
+        /* Dynamically populated — shows registered pages */
+        .pages-empty {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            padding: 6px 18px 2px;
+            font-style: italic;
+        }
+
+        /* ── Footer ── */
+        .panel-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.7rem;
+            color: #2a3040;
+            text-align: center;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .panel-footer span { color: var(--accent); opacity: 0.6; }
+        .nav-item.active-page {
+            background: var(--accent-dim);
+            border-left-color: var(--accent);
+            color: var(--accent);
+        }
+        .nav-item.active-page .nav-icon {
+            background: var(--accent-dim);
+            border-color: var(--border-accent);
+        }
+    </style>
+</head>
+<body>
+<div class="panel">
+
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-logo">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div>
+                <div class="brand-name">Remark<span>Hub</span></div>
+                <div class="brand-sub">Risk Panel · v2.1</div>
+            </div>
+        </div>
+        <button class="close-btn" onclick="sendCmd('close-panel')">✕</button>
+    </div>
+
+    <!-- Nav -->
+    <nav id="mainNav">
+
+        <!-- Static: VND Frauds external link -->
+        <div class="nav-section-label">Quick Links</div>
+        <div class="nav-item" id="navVND" onclick="openPage('VND_Frauds.html', 'VND Frauds')">
+            <div class="nav-icon">📖</div>
+            <span class="nav-label">VND Frauds</span>
+            <span class="nav-ext">→</span>
+        </div>
+
+        <!-- Static: tabs on index.html -->
+        <div class="nav-section-label">Panels</div>
+        <div class="nav-item" id="navTG" onclick="sendCmd('switch-tab', { tab: 'tg-chat' })">
+            <div class="nav-icon">📱</div>
+            <span class="nav-label">TG Chat</span>
+            <span class="nav-badge">TG</span>
+        </div>
+        <div class="nav-item" id="navRisk" onclick="sendCmd('switch-tab', { tab: 'risk-remark' })">
+            <div class="nav-icon">✍️</div>
+            <span class="nav-label">Risk Remark</span>
+            <span class="nav-badge">RISK</span>
+        </div>
+
+        <!-- Dynamic: registered pages appear here -->
+        <div class="nav-section-label" id="pagesLabel" style="display:none">Pages</div>
+        <div id="pagesList"></div>
+
+        <!-- About -->
+        <div class="nav-section-label">Info</div>
+        <div class="about-toggle" onclick="toggleAbout()">
+            <div class="nav-icon">ℹ️</div>
+            <span>About RemarkHub</span>
+            <span class="about-arrow" id="aboutArrow">▸</span>
+        </div>
+        <div class="about-body" id="aboutBody">
+            <p><strong style="color:var(--accent)">RemarkHub</strong> is a quick-copy risk panel for the RS team.</p>
+            <p>Paste TG messages, log risk remarks, and manage fraud flags — all in one place.</p>
+            <hr>
+            <p class="ver">Version 2.1</p>
+            <p>Built by <strong style="color:var(--text-main)">JanithK</strong></p>
+        </div>
+
+    </nav>
+
+    <div class="panel-footer">Powered by <span>RemarkHub</span> · RS Team</div>
+</div>
+
+<script>
+/*
+  ╔══════════════════════════════════════════════════════════╗
+  ║              PAGE REGISTRY — ADD PAGES HERE              ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  To register a new page, add an object to PAGE_REGISTRY  ║
+  ║  below. Format:                                          ║
+  ║                                                          ║
+  ║  {                                                       ║
+  ║    icon: '🔥',           // emoji or text icon           ║
+  ║    label: 'My Page',     // display name                 ║
+  ║    file: 'my-page.html', // filename (relative)          ║
+  ║    badge: 'NEW',         // optional badge text          ║
+  ║    external: false,      // true = opens in new tab      ║
+  ║  }                                                       ║
+  ║                                                          ║
+  ║  That's it. Save and reload — it appears in the nav.     ║
+  ╚══════════════════════════════════════════════════════════╝
+*/
+
+const PAGE_REGISTRY = [
+    // ── Add your pages below this line ──────────────────────
+    {
+        icon: '🏠',
+        label: 'Dashboard',
+        file: 'index.html',
+        badge: '',
+        external: false,
+    },
+    {
+        icon: '✍️',
+        label: 'Remark Hub',
+        file: 'remark_hub.html',
+        badge: '',
+        external: false,
+    },
+    {
+        icon: '📋',
+        label: 'Risk SOP',
+        file: 'risk-sop-guide.html',
+        badge: '',
+        external: false,
+    },
+    {
+        icon: '📖',
+        label: 'VND Frauds',
+        file: 'VND_Frauds.html',
+        badge: '',
+        external: false,
+    },
+    // ── End of pages ────────────────────────────────────────
+];
+
+/* ── Messaging to parent ── */
+function sendCmd(type, extra) {
+    parent.postMessage(Object.assign({ type }, extra || {}), '*');
+}
+
+/* ── Build pages list ── */
+function buildPages() {
+    const list = document.getElementById('pagesList');
+    const label = document.getElementById('pagesLabel');
+
+    if (!PAGE_REGISTRY.length) {
+        list.innerHTML = '';
+        label.style.display = 'none';
+        return;
+    }
+
+    label.style.display = '';
+    list.innerHTML = PAGE_REGISTRY.map((p, i) => {
+        const badge = p.badge ? `<span class="nav-badge">${p.badge}</span>` : '';
+        const ext = p.external ? `<span class="nav-ext">↗</span>` : '';
+        const handler = p.external
+            ? `sendCmd('open-url', { url: '${p.file}' })`
+            : `openPage('${p.file}', '${(p.label || '').replace(/'/g,"\\'")}')`;
+        return `
+        <div class="nav-item" onclick="${handler}" style="animation: itemIn 0.3s cubic-bezier(0.4,0,0.2,1) ${i * 0.05}s both;">
+            <div class="nav-icon">${p.icon || '📄'}</div>
+            <span class="nav-label">${p.label || p.file}</span>
+            ${badge}${ext}
+        </div>`;
+    }).join('');
+}
+
+function openPage(file, label) {
+    /* Opens the page inside the parent window (same tab) */
+    sendCmd('open-page', { file, label });
+}
+
+/* ── About toggle ── */
+function toggleAbout() {
+    document.getElementById('aboutBody').classList.toggle('open');
+    document.getElementById('aboutArrow').classList.toggle('open');
+}
+
+/* ── Highlight current page ── */
+function highlightCurrent() {
+    // Ask parent which file is loaded
+    const parentHref = (parent !== window) ? parent.location.href : location.href;
+    const currentFile = parentHref.split('/').pop().split('?')[0];
+
+    // Map file → nav item id
+    const map = {
+        'index.html': ['navTG', 'navRisk'],
+        'VND_Frauds.html': ['navVND'],
+    };
+
+    // Also map page registry items
+    PAGE_REGISTRY.forEach((p, i) => {
+        if (p.file === currentFile) {
+            const el = document.querySelector(`#pagesList .nav-item:nth-child(${i+1})`);
+            if (el) el.classList.add('active-page');
+        }
+    });
+
+    Object.entries(map).forEach(([file, ids]) => {
+        if (currentFile === file) {
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('active-page');
+            });
+        }
+    });
+}
+
+/* ── Init ── */
+buildPages();
+try { highlightCurrent(); } catch(e) {}
+</script>
+
+<style>
+@keyframes itemIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+</style>
+</body>
+</html>
