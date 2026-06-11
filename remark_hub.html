@@ -349,61 +349,6 @@
             box-shadow: 0 0 8px var(--accent);
         }
 
-        /* RS Inline Input — in tab nav, left of TG Chat */
-        .rs-inline {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 0 10px;
-            border-right: 1px solid var(--border);
-            height: 100%;
-            overflow: hidden;
-            max-width: 100px;
-            opacity: 1;
-            transition: max-width 0.3s cubic-bezier(0.4,0,0.2,1),
-                        opacity 0.25s ease,
-                        padding 0.3s ease,
-                        border-color 0.3s ease;
-        }
-
-        .rs-inline.rs-hidden {
-            max-width: 0;
-            opacity: 0;
-            padding: 0;
-            border-right-color: transparent;
-        }
-
-        .rs-inline-label {
-            color: var(--accent);
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
-
-        .rs-inline-input {
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 4px 6px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            outline: none;
-            width: 38px;
-            text-align: center;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .rs-inline-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-dim);
-            width: 50px;
-        }
-
-        .rs-inline-input::placeholder { color: var(--text-dim); font-weight: 400; }
-
         /* Main Content */
         .content-wrapper {
             flex: 1;
@@ -840,10 +785,6 @@
 </header>
 
 <div class="tab-nav">
-    <div class="rs-inline" id="tgInputBar">
-        <span class="rs-inline-label">RS:</span>
-        <span class="rs-inline-input" id="rsAutoDisplay" style="display:inline-flex;align-items:center;padding:0 6px;font-weight:600;color:var(--accent);letter-spacing:0.04em;font-size:0.85rem;">—</span>
-    </div>
     <button class="tab-btn active" onclick="switchTab('tg-chat', event)">📱 TG Chat</button>
     <button class="tab-btn" onclick="switchTab('risk-remark', event)">✍️ Risk Remark</button>
 </div>
@@ -933,9 +874,6 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tab).classList.add('active');
         event.target.classList.add('active');
-        const rsWidget = document.getElementById('tgInputBar');
-        if (tab === 'tg-chat') rsWidget.classList.remove('rs-hidden');
-        else rsWidget.classList.add('rs-hidden');
     }
 
     function notify(msg = "Copied!") {
@@ -1174,9 +1112,6 @@
     function updateTGNumbers() {
         const rsUser = getSessionRS();
         const number = rsUser || 'rs__';
-        // Update the display badge
-        const display = document.getElementById('rsAutoDisplay');
-        if (display) display.textContent = number;
         data.tg = TG_TEMPLATES.map(t => t.replace(/rs__/g, number));
         if (currentTab === 'tg') renderList('tg');
     }
@@ -1216,9 +1151,6 @@
         document.querySelectorAll('.tab-btn').forEach(b => {
             if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(tab)) b.classList.add('active');
         });
-        const rsWidget = document.getElementById('tgInputBar');
-        if (tab === 'tg-chat') rsWidget.classList.remove('rs-hidden');
-        else rsWidget.classList.add('rs-hidden');
         document.getElementById('sidePanel').classList.remove('active');
         document.getElementById('sideOverlay').classList.remove('active');
     }
