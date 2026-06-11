@@ -1,0 +1,68 @@
+<!-- ═══════════════════════════════════════════════════════════
+     AUTH GUARD — paste immediately after <body> on every page
+     (dashboard.html, remark_hub.html, risk-sop-guide.html, etc.)
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+  (function() {
+    const SESSION_KEY = "secure_auth_session";
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) { window.location.replace("login.html"); return; }
+      const s = JSON.parse(raw);
+      if (Date.now() > s.expiry) {
+        localStorage.removeItem(SESSION_KEY);
+        window.location.replace("login.html");
+      }
+    } catch(e) {
+      window.location.replace("login.html");
+    }
+  })();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGOUT BUTTON — add anywhere you want a sign-out control
+     (recommended: dashboard header / user menu)
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- HTML: place wherever the button should appear -->
+<button class="logout-btn" onclick="logout()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+  Sign out
+</button>
+
+<!-- CSS: add to your <style> block -->
+<style>
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 1px solid rgba(248,113,113,0.25);
+  color: rgba(248,113,113,0.7);
+  font-size: 0.78rem;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.logout-btn:hover {
+  background: rgba(248,113,113,0.08);
+  border-color: rgba(248,113,113,0.5);
+  color: #f87171;
+}
+</style>
+
+<!-- JS: add inside your existing <script> or a new one -->
+<script>
+  function logout() {
+    localStorage.removeItem("secure_auth_session");
+    window.location.href = "login.html";
+  }
+</script>

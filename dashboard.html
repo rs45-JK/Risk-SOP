@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEXUS — Risk Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;min-height:100%;overflow-x:hidden}
+body{
+  background:#00000a;
+  color:#d4e8ff;
+  font-family:'Rajdhani',sans-serif;
+  cursor:none;
+  user-select:none;
+  overflow-x:hidden;
+}
+
+/* ══ CANVASES ══ */
+#sky-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+#cursor-canvas{position:fixed;inset:0;z-index:99999;pointer-events:none}
+
+/* ══ ATMOSPHERIC OVERLAY ══ */
+.atmos{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 50% at 15% 85%,rgba(30,0,100,.5) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 45% at 85% 15%,rgba(0,20,100,.4) 0%,transparent 55%),
+    radial-gradient(ellipse 120% 60% at 50% 115%,rgba(60,0,100,.35) 0%,transparent 45%),
+    radial-gradient(ellipse 50% 40% at 70% 50%,rgba(0,0,60,.2) 0%,transparent 60%);
+  animation:atmos-breathe 12s ease-in-out infinite alternate;
+}
+@keyframes atmos-breathe{
+  0%  {opacity:.8}
+  50% {opacity:1}
+  100%{opacity:.7}
+}
+
+/* ══ HEADER ══ */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2.5rem;
+  background:rgba(2,0,15,.55);
+  border-bottom:1px solid rgba(140,80,255,.18);
+  backdrop-filter:blur(30px);
+}
+
+/* logo */
+.logo-wrap{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.logo-star{
+  position:relative;width:44px;height:44px;
+  display:grid;place-items:center;flex-shrink:0;
+}
+.logo-star svg{position:absolute}
+.ls-r1{animation:lspin 8s linear infinite}
+.ls-r2{animation:lspin 5s linear infinite reverse}
+@keyframes lspin{to{transform:rotate(360deg)}}
+.ls-core{
+  width:11px;height:11px;border-radius:50%;
+  background:radial-gradient(circle,#fff 10%,#ffe88a 50%,#ff8800 100%);
+  box-shadow:0 0 10px #fff,0 0 24px #ffd060,0 0 50px #ff8000,0 0 90px rgba(255,100,0,.5);
+  animation:ls-pulse 2.2s ease-in-out infinite;
+}
+@keyframes ls-pulse{
+  0%,100%{box-shadow:0 0 10px #fff,0 0 24px #ffd060,0 0 50px #ff8000,0 0 90px rgba(255,100,0,.5)}
+  50%{box-shadow:0 0 18px #fff,0 0 40px #ffd060,0 0 80px #ff8000,0 0 140px rgba(255,100,0,.7)}
+}
+.logo-name{
+  font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;
+  letter-spacing:.22em;
+  background:linear-gradient(135deg,#fff8e0 0%,#d4a0ff 50%,#8040ff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;
+}
+.logo-tagline{
+  display:block;font-family:'Share Tech Mono',monospace;
+  font-size:.52rem;letter-spacing:.2em;
+  color:rgba(160,120,255,.4);margin-top:2px;
+}
+
+/* ══ CLOCK STRIP — CENTER ══ */
+.hdr-clocks{
+  position:absolute;left:50%;transform:translateX(-50%);
+  display:flex;align-items:stretch;gap:0;
+  border:1px solid rgba(160,100,255,.2);
+  background:rgba(10,5,30,.6);
+  overflow:hidden;
+}
+.clock-block{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:6px 22px;gap:3px;
+  position:relative;
+}
+.clock-block:not(:last-child)::after{
+  content:'';position:absolute;right:0;top:20%;bottom:20%;
+  width:1px;background:rgba(140,80,255,.2);
+}
+.cb-flag{font-size:.9rem;line-height:1}
+.cb-time{
+  font-family:'Orbitron',monospace;
+  font-size:.92rem;font-weight:700;
+  letter-spacing:.08em;
+  color:#ffffff;
+  text-shadow:0 0 16px rgba(180,140,255,.9),0 0 30px rgba(140,80,255,.5);
+  font-variant-numeric:tabular-nums;
+}
+.cb-label{
+  font-family:'Share Tech Mono',monospace;
+  font-size:.48rem;letter-spacing:.2em;
+  color:rgba(160,120,255,.55);text-transform:uppercase;
+}
+
+/* header right */
+.hdr-right{display:flex;align-items:center;gap:.9rem;flex-shrink:0}
+.status-pill{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 13px;
+  border:1px solid rgba(80,255,160,.15);
+  background:rgba(0,255,120,.03);
+  font-family:'Share Tech Mono',monospace;
+  font-size:.56rem;letter-spacing:.12em;color:rgba(100,255,160,.6);
+}
+.sp-dot{
+  width:6px;height:6px;border-radius:50%;background:#60ffb0;
+  box-shadow:0 0 8px #60ffb0;animation:spdot 1.8s ease-in-out infinite;
+}
+@keyframes spdot{0%,100%{opacity:1}50%{opacity:.1}}
+.btn-logout{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 18px;background:transparent;
+  border:1px solid rgba(255,70,100,.35);
+  color:rgba(255,90,120,.85);
+  font-family:'Orbitron',monospace;
+  font-size:.55rem;letter-spacing:.13em;cursor:none;
+  clip-path:polygon(10px 0%,100% 0%,100% calc(100% - 10px),calc(100% - 10px) 100%,0% 100%,0% 10px);
+  transition:all .3s;
+}
+.btn-logout:hover{
+  background:rgba(255,50,90,.1);
+  border-color:rgba(255,50,90,.8);
+  box-shadow:0 0 30px rgba(255,50,90,.25);color:#ff6080;
+}
+
+/* ══ PAGE ══ */
+.page{
+  position:relative;z-index:10;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:90px 2rem 3rem;
+  gap:0;
+}
+
+/* ══ HERO ══ */
+.hero{
+  text-align:center;position:relative;
+  margin-bottom:3.5rem;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:.62rem;letter-spacing:.4em;
+  color:rgba(160,120,255,.5);
+  margin-bottom:1.2rem;
+  animation:fadeup .8s ease both;
+}
+.eyebrow-line{width:40px;height:1px;background:rgba(160,120,255,.3)}
+
+.hero-title{
+  font-family:'Orbitron',monospace;font-weight:900;
+  font-size:clamp(2.8rem,8vw,5.8rem);
+  line-height:.95;letter-spacing:.04em;
+  animation:fadeup .8s .08s ease both;
+  margin-bottom:1.2rem;
+}
+.ht-white{
+  display:block;color:#f0f0ff;
+  text-shadow:0 0 80px rgba(200,160,255,.2);
+}
+.ht-fire{
+  display:block;
+  background:linear-gradient(135deg,#ffe566 0%,#ff9500 25%,#ff3c78 60%,#c040ff 100%);
+  background-size:300% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:fire-anim 6s linear infinite;
+  filter:drop-shadow(0 0 30px rgba(255,140,0,.5));
+}
+@keyframes fire-anim{to{background-position:300% center}}
+
+.hero-desc{
+  font-size:.95rem;color:rgba(180,150,230,.4);
+  letter-spacing:.12em;font-weight:400;
+  animation:fadeup .8s .16s ease both;
+}
+@keyframes fadeup{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* floating orbs behind hero */
+.hero-orb{
+  position:absolute;border-radius:50%;pointer-events:none;
+  filter:blur(50px);animation:orb-float 8s ease-in-out infinite alternate;
+}
+.ho1{width:300px;height:300px;background:rgba(80,0,180,.12);
+  top:-100px;left:-150px;animation-delay:0s}
+.ho2{width:250px;height:250px;background:rgba(0,40,180,.1);
+  top:-80px;right:-120px;animation-delay:-4s}
+@keyframes orb-float{
+  from{transform:translateY(0) scale(1)}
+  to{transform:translateY(-30px) scale(1.1)}
+}
+
+/* ══ CARDS ══ */
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.5rem;width:100%;max-width:1080px;
+}
+
+.mcard{
+  text-decoration:none;display:block;
+  position:relative;perspective:900px;
+  animation:cardrise .7s ease both;
+}
+.mcard:nth-child(1){animation-delay:.25s;--hr:80;--hg:160;--hb:255;--hue:210}
+.mcard:nth-child(2){animation-delay:.4s; --hr:168;--hg:85;--hb:255;--hue:270}
+.mcard:nth-child(3){animation-delay:.55s;--hr:255;--hg:90;--hb:60;--hue:15}
+@keyframes cardrise{
+  from{opacity:0;transform:translateY(55px) scale(.94) rotateX(6deg)}
+  to{opacity:1;transform:none}
+}
+
+.card-inner{
+  position:relative;overflow:hidden;
+  background:rgba(6,3,22,.8);
+  border:1px solid rgba(var(--hr),var(--hg),var(--hb),.1);
+  padding:2.2rem 1.9rem 1.8rem;
+  transition:transform .5s cubic-bezier(.2,.65,0,1.3),border-color .4s,box-shadow .4s;
+  transform-style:preserve-3d;
+  backdrop-filter:blur(16px);
+  height:100%;
+}
+.mcard:hover .card-inner{
+  transform:translateY(-12px) scale(1.02) rotateX(-1.5deg);
+  border-color:rgba(var(--hr),var(--hg),var(--hb),.5);
+  box-shadow:
+    0 24px 70px rgba(0,0,0,.75),
+    0 0 60px rgba(var(--hr),var(--hg),var(--hb),.18),
+    inset 0 0 100px rgba(var(--hr),var(--hg),var(--hb),.04);
+}
+
+/* top bar */
+.c-topbar{
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(var(--hr),var(--hg),var(--hb),.9) 40%,rgba(var(--hr),var(--hg),var(--hb),.9) 60%,transparent);
+  box-shadow:0 0 14px rgba(var(--hr),var(--hg),var(--hb),.7);
+  animation:topbar-flicker 4s ease-in-out infinite;
+}
+@keyframes topbar-flicker{
+  0%,100%{opacity:.9}60%{opacity:1}80%{opacity:.5}85%{opacity:.9}
+}
+
+/* corner cuts */
+.card-inner::before{
+  content:'';position:absolute;top:0;right:0;width:22px;height:22px;
+  border-left:1px solid rgba(var(--hr),var(--hg),var(--hb),.4);
+  border-bottom:1px solid rgba(var(--hr),var(--hg),var(--hb),.4);
+}
+.card-inner::after{
+  content:'';position:absolute;bottom:0;left:0;width:22px;height:22px;
+  border-right:1px solid rgba(var(--hr),var(--hg),var(--hb),.4);
+  border-top:1px solid rgba(var(--hr),var(--hg),var(--hb),.4);
+}
+
+/* nebula blob */
+.c-nebula{
+  position:absolute;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--hr),var(--hg),var(--hb),.1) 0%,transparent 70%);
+  top:-80px;right:-80px;filter:blur(35px);
+  opacity:0;transition:opacity .5s;pointer-events:none;
+}
+.mcard:hover .c-nebula{opacity:1}
+
+/* scan */
+.c-scan{
+  position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(var(--hr),var(--hg),var(--hb),.6),transparent);
+  top:0;opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.mcard:hover .c-scan{opacity:.5;animation:cscan 2.5s linear infinite}
+@keyframes cscan{from{top:0}to{top:100%}}
+
+/* shimmer */
+.c-shimmer{
+  position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.03) 50%,transparent 62%);
+  background-size:250% 100%;opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.mcard:hover .c-shimmer{opacity:1;animation:cshim 2s linear infinite}
+@keyframes cshim{from{background-position:250%}to{background-position:-250%}}
+
+/* mini stars in card */
+.c-starfield{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.cst{
+  position:absolute;border-radius:50%;background:#fff;
+  animation:cstw var(--cd,3s) ease-in-out infinite var(--cdl,0s);
+}
+@keyframes cstw{0%,100%{opacity:.05}50%{opacity:.6}}
+
+/* icon */
+.c-icon{
+  width:56px;height:56px;
+  background:rgba(var(--hr),var(--hg),var(--hb),.07);
+  border:1px solid rgba(var(--hr),var(--hg),var(--hb),.2);
+  display:grid;place-items:center;
+  position:relative;margin-bottom:1.4rem;
+  transition:all .4s;
+}
+.mcard:hover .c-icon{
+  background:rgba(var(--hr),var(--hg),var(--hb),.15);
+  border-color:rgba(var(--hr),var(--hg),var(--hb),.65);
+  box-shadow:0 0 26px rgba(var(--hr),var(--hg),var(--hb),.35);
+}
+.c-icon svg{width:24px;height:24px;transition:transform .4s}
+.mcard:hover .c-icon svg{transform:scale(1.15) rotate(-5deg)}
+.c-oring{
+  position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid rgba(var(--hr),var(--hg),var(--hb),.12);
+  border-top-color:rgba(var(--hr),var(--hg),var(--hb),.6);
+  opacity:0;animation:oring 3.5s linear infinite paused;transition:opacity .4s;
+}
+.mcard:hover .c-oring{opacity:1;animation-play-state:running}
+@keyframes oring{to{transform:rotate(360deg)}}
+
+.c-num{
+  font-family:'Share Tech Mono',monospace;
+  font-size:.55rem;letter-spacing:.25em;
+  color:hsl(var(--hue),85%,68%);opacity:.55;margin-bottom:.4rem;
+}
+.c-title{
+  font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;
+  color:#e4deff;line-height:1.25;letter-spacing:.04em;margin-bottom:.9rem;
+  transition:color .3s,text-shadow .3s;
+}
+.mcard:hover .c-title{
+  color:#fff;
+  text-shadow:0 0 20px rgba(var(--hr),var(--hg),var(--hb),.4);
+}
+.c-desc{
+  font-size:.85rem;line-height:1.82;color:rgba(170,150,220,.4);font-weight:400;
+  transition:color .3s;
+}
+.mcard:hover .c-desc{color:rgba(195,175,235,.65)}
+.c-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:1.6rem;padding-top:.9rem;
+  border-top:1px solid rgba(255,255,255,.05);
+  transition:border-color .3s;
+}
+.mcard:hover .c-foot{border-color:rgba(var(--hr),var(--hg),var(--hb),.2)}
+.c-cta{
+  font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  letter-spacing:.18em;color:hsl(var(--hue),85%,68%);
+  opacity:.6;transition:opacity .3s;
+}
+.mcard:hover .c-cta{opacity:1}
+.c-arr{
+  width:30px;height:30px;
+  border:1px solid rgba(var(--hr),var(--hg),var(--hb),.22);
+  display:grid;place-items:center;transition:all .3s;
+}
+.mcard:hover .c-arr{
+  border-color:rgba(var(--hr),var(--hg),var(--hb),.75);
+  background:rgba(var(--hr),var(--hg),var(--hb),.1);
+  transform:translateX(5px);
+  box-shadow:0 0 16px rgba(var(--hr),var(--hg),var(--hb),.3);
+}
+.c-arr svg{width:12px;height:12px;stroke:rgba(var(--hr),var(--hg),var(--hb),.55);transition:stroke .3s}
+.mcard:hover .c-arr svg{stroke:hsl(var(--hue),90%,72%)}
+
+/* ══ FOOTER ══ */
+footer{
+  position:relative;z-index:10;
+  text-align:center;padding:1.2rem;
+  border-top:1px solid rgba(100,60,200,.08);
+  font-family:'Share Tech Mono',monospace;
+  font-size:.52rem;letter-spacing:.22em;
+  color:rgba(120,80,200,.2);
+  margin-top:3rem;
+}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:820px){
+  .cards-grid{grid-template-columns:1fr;max-width:420px}
+  .hdr-clocks{display:none}
+  header{padding:0 1.2rem}
+}
+@media(max-width:1020px) and (min-width:821px){
+  .cards-grid{grid-template-columns:1fr 1fr}
+  .clock-block{padding:6px 14px}
+  .cb-time{font-size:.76rem}
+}
+</style>
+</head>
+<body>
+
+<canvas id="sky-canvas"></canvas>
+<canvas id="cursor-canvas"></canvas>
+<div class="atmos"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-wrap">
+    <div class="logo-star">
+      <div class="ls-core"></div>
+      <svg class="ls-r1" width="44" height="44" viewBox="0 0 44 44" fill="none">
+        <circle cx="22" cy="22" r="18" stroke="rgba(220,160,255,.22)" stroke-width=".7" stroke-dasharray="5 4"/>
+      </svg>
+      <svg class="ls-r2" width="44" height="44" viewBox="0 0 44 44" fill="none">
+        <circle cx="22" cy="22" r="13" stroke="rgba(255,170,60,.28)" stroke-width=".6" stroke-dasharray="3 5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">NEXUS</div>
+      <span class="logo-tagline">RISK INTELLIGENCE PLATFORM</span>
+    </div>
+  </div>
+
+  <!-- CLOCKS -->
+  <div class="hdr-clocks">
+    <div class="clock-block">
+      <span class="cb-flag">🇱🇰</span>
+      <div class="cb-time" id="clk-sl">--:--:--</div>
+      <div class="cb-label">SRI LANKA</div>
+    </div>
+    <div class="clock-block">
+      <span class="cb-flag">🇨🇳</span>
+      <div class="cb-time" id="clk-cn">--:--:--</div>
+      <div class="cb-label">CHINA</div>
+    </div>
+    <div class="clock-block">
+      <div class="cb-time" id="clk-date" style="font-size:.7rem;color:rgba(200,170,255,.7);letter-spacing:.05em">--/--/----</div>
+      <div class="cb-label">UTC DATE</div>
+    </div>
+  </div>
+
+  <div class="hdr-right">
+    <div class="status-pill"><div class="sp-dot"></div>ALL SYSTEMS ONLINE</div>
+    <button class="btn-logout" onclick="logout()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      LOGOUT
+    </button>
+  </div>
+</header>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="hero">
+    <div class="hero-orb ho1"></div>
+    <div class="hero-orb ho2"></div>
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      NEXUS COMMAND CENTER
+      <div class="eyebrow-line"></div>
+    </div>
+    <h1 class="hero-title">
+      <span class="ht-white">SELECT</span>
+      <span class="ht-fire">MODULE</span>
+    </h1>
+    <p class="hero-desc">Choose your operational module to begin</p>
+  </div>
+
+  <div class="cards-grid">
+
+    <a href="risk-remark.html" class="mcard">
+      <div class="card-inner">
+        <div class="c-topbar"></div>
+        <div class="c-nebula"></div>
+        <div class="c-scan"></div>
+        <div class="c-shimmer"></div>
+        <div class="c-starfield" data-stars="20"></div>
+        <div class="c-icon">
+          <div class="c-oring"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(80,160,255,.95)" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/>
+          </svg>
+        </div>
+        <div class="c-num">// MODULE 01</div>
+        <div class="c-title">Risk Remark &amp; Chat</div>
+        <div class="c-desc">Log risk observations, annotate accounts, and collaborate with your team on flagged cases in real time.</div>
+        <div class="c-foot">
+          <div class="c-cta">ENTER MODULE →</div>
+          <div class="c-arr">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="risk-sop.html" class="mcard">
+      <div class="card-inner">
+        <div class="c-topbar"></div>
+        <div class="c-nebula"></div>
+        <div class="c-scan"></div>
+        <div class="c-shimmer"></div>
+        <div class="c-starfield" data-stars="20"></div>
+        <div class="c-icon">
+          <div class="c-oring"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(168,85,255,.95)" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="c-num">// MODULE 02</div>
+        <div class="c-title">Risk SOP</div>
+        <div class="c-desc">Standard Operating Procedures — fraud detection, account tagging, withdrawal processing, and escalation protocols.</div>
+        <div class="c-foot">
+          <div class="c-cta">ENTER MODULE →</div>
+          <div class="c-arr">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="vnd-fraud.html" class="mcard">
+      <div class="card-inner">
+        <div class="c-topbar"></div>
+        <div class="c-nebula"></div>
+        <div class="c-scan"></div>
+        <div class="c-shimmer"></div>
+        <div class="c-starfield" data-stars="20"></div>
+        <div class="c-icon">
+          <div class="c-oring"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,90,60,.95)" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="c-num">// MODULE 03</div>
+        <div class="c-title">VND Fraud</div>
+        <div class="c-desc">Vietnamese Dong fraud monitoring — suspicious transaction review, pattern analysis, and fraud type classification.</div>
+        <div class="c-foot">
+          <div class="c-cta">ENTER MODULE →</div>
+          <div class="c-arr">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer>✦ &nbsp; NEXUS RISK INTELLIGENCE &nbsp;·&nbsp; INTERNAL USE ONLY &nbsp;·&nbsp; UNAUTHORIZED ACCESS PROHIBITED &nbsp; ✦</footer>
+
+<script>
+/* ══ LOGOUT ══ */
+function logout(){
+  localStorage.removeItem("secure_auth_session");
+  window.location.href="login.html";
+}
+
+/* ══ CLOCKS ══ */
+function tick(){
+  const p=n=>String(n).padStart(2,'0');
+  const now=new Date();
+  const sl=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Colombo'}));
+  const cn=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Shanghai'}));
+  document.getElementById('clk-sl').textContent=`${p(sl.getHours())}:${p(sl.getMinutes())}:${p(sl.getSeconds())}`;
+  document.getElementById('clk-cn').textContent=`${p(cn.getHours())}:${p(cn.getMinutes())}:${p(cn.getSeconds())}`;
+  document.getElementById('clk-date').textContent=`${p(sl.getDate())}/${p(sl.getMonth()+1)}/${sl.getFullYear()}`;
+}
+tick(); setInterval(tick,1000);
+
+/* ══════════════════════════════════════════
+   NIGHT SKY BACKGROUND
+══════════════════════════════════════════ */
+(function(){
+  const cv=document.getElementById('sky-canvas');
+  const cx=cv.getContext('2d');
+  let W,H;
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
+  resize(); window.addEventListener('resize',resize);
+
+  /* ── Star layers ── */
+  function mkStars(n,rMin,rMax,aMin,aMax,colorChance){
+    return Array.from({length:n},()=>{
+      const rng=Math.random();
+      let col='#ffffff';
+      if(rng<.07) col='#ffd4a0';       // warm orange
+      else if(rng<.14) col='#a8c8ff';  // cool blue
+      else if(rng<.18) col='#ffeecc';  // warm white
+      return{
+        x:Math.random(),y:Math.random(),
+        r:rMin+Math.random()*(rMax-rMin),
+        aBase:aMin+Math.random()*(aMax-aMin),
+        phase:Math.random()*Math.PI*2,
+        spd:.4+Math.random()*1.8,
+        col,
+      };
+    });
+  }
+  const layer1=mkStars(420,.15,.35,.04,.14);  // dust
+  const layer2=mkStars(200,.3,.65,.1,.28);    // medium
+  const layer3=mkStars(80,.6,1.1,.2,.5);      // bright
+  const layer4=mkStars(28,1.0,1.9,.4,.85);   // very bright
+  const layer5=mkStars(8,1.6,2.8,.6,.95);    // giant stars
+
+  /* ── Nebulae ── */
+  const nebulae=[
+    {nx:.12,ny:.18,rw:W*.5,rh:H*.35,h:240,a:.07},
+    {nx:.78,ny:.7, rw:W*.45,rh:H*.38,h:280,a:.065},
+    {nx:.5, ny:.45,rw:W*.7, rh:H*.5, h:260,a:.035},
+    {nx:.88,ny:.12,rw:W*.3, rh:H*.28,h:195,a:.055},
+    {nx:.25,ny:.82,rw:W*.35,rh:H*.3, h:300,a:.05},
+  ];
+
+  /* ── Galaxy smudges ── */
+  const galaxies=[
+    {nx:.2, ny:.15,rx:55,ry:32,rot:-.4,a:.055},
+    {nx:.72,ny:.72,rx:42,ry:22,rot:.3, a:.045},
+    {nx:.85,ny:.32,rx:35,ry:18,rot:.8, a:.04},
+    {nx:.35,ny:.55,rx:28,ry:14,rot:-.6,a:.035},
+  ];
+
+  /* ── Auto shooting stars ── */
+  const shoots=[];
+  function spawnAuto(){
+    if(shoots.length<6 && Math.random()<.012){
+      const sx=Math.random()*W*.7;
+      const sy=Math.random()*H*.4;
+      const ang=Math.PI/5+Math.random()*(Math.PI/6);
+      const spd=7+Math.random()*9;
+      const hue=180+Math.random()*80;
+      shoots.push({
+        x:sx,y:sy,
+        vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,
+        life:1,decay:.013+Math.random()*.01,
+        len:100+Math.random()*160,
+        col:`hsl(${hue},80%,92%)`,
+        w:.6+Math.random()*.8,
+        // trail sparks
+        sparks:[],
+      });
+    }
+  }
+
+  /* ── Moon ── */
+  function drawMoon(){
+    const mx=W*.88,my=H*.1,mr=46;
+    // outer glow
+    const g=cx.createRadialGradient(mx,my,mr*.5,mx,my,mr*3.5);
+    g.addColorStop(0,'rgba(220,200,255,.08)');
+    g.addColorStop(.4,'rgba(180,160,240,.04)');
+    g.addColorStop(1,'transparent');
+    cx.fillStyle=g;cx.beginPath();cx.arc(mx,my,mr*3.5,0,Math.PI*2);cx.fill();
+    // atmosphere ring
+    const ag=cx.createRadialGradient(mx,my,mr*.9,mx,my,mr*1.4);
+    ag.addColorStop(0,'transparent');
+    ag.addColorStop(.5,'rgba(200,190,255,.06)');
+    ag.addColorStop(1,'transparent');
+    cx.fillStyle=ag;cx.beginPath();cx.arc(mx,my,mr*1.4,0,Math.PI*2);cx.fill();
+    // moon body
+    const mg2=cx.createRadialGradient(mx-mr*.3,my-mr*.3,0,mx,my,mr);
+    mg2.addColorStop(0,'rgba(240,235,255,1)');
+    mg2.addColorStop(.4,'rgba(210,205,240,.95)');
+    mg2.addColorStop(.75,'rgba(160,155,200,.8)');
+    mg2.addColorStop(1,'rgba(120,115,170,.5)');
+    cx.fillStyle=mg2;cx.beginPath();cx.arc(mx,my,mr,0,Math.PI*2);cx.fill();
+    // craters
+    [[mx+8,my+12,7],[mx-14,my+4,5],[mx+18,my-16,4],[mx-6,my-18,3]].forEach(([cx2,cy2,cr])=>{
+      const cg=cx.createRadialGradient(cx2,cy2,0,cx2,cy2,cr);
+      cg.addColorStop(0,'rgba(80,75,120,.3)');cg.addColorStop(1,'transparent');
+      cx.fillStyle=cg;cx.beginPath();cx.arc(cx2,cy2,cr,0,Math.PI*2);cx.fill();
+    });
+  }
+
+  /* ── Milky Way band ── */
+  function drawMilkyWay(){
+    cx.save();
+    cx.translate(W*.5,H*.5);cx.rotate(-.35);
+    const mw=cx.createLinearGradient(-W*.8,0,W*.8,0);
+    mw.addColorStop(0,'transparent');
+    mw.addColorStop(.2,'rgba(100,80,180,.03)');
+    mw.addColorStop(.35,'rgba(150,120,220,.065)');
+    mw.addColorStop(.5,'rgba(120,100,200,.08)');
+    mw.addColorStop(.65,'rgba(150,120,220,.065)');
+    mw.addColorStop(.8,'rgba(100,80,180,.03)');
+    mw.addColorStop(1,'transparent');
+    cx.fillStyle=mw;cx.fillRect(-W*.8,-H*.3,W*1.6,H*.6);
+    // brighter core strip
+    const mwc=cx.createLinearGradient(-W*.8,0,W*.8,0);
+    mwc.addColorStop(0,'transparent');
+    mwc.addColorStop(.3,'rgba(180,160,255,.02)');
+    mwc.addColorStop(.5,'rgba(200,180,255,.04)');
+    mwc.addColorStop(.7,'rgba(180,160,255,.02)');
+    mwc.addColorStop(1,'transparent');
+    cx.fillStyle=mwc;cx.fillRect(-W*.8,-H*.1,W*1.6,H*.2);
+    cx.restore();
+  }
+
+  let frame=0;
+  let mmx=W/2,mmy=H/2;
+  document.addEventListener('mousemove',e=>{mmx=e.clientX;mmy=e.clientY});
+
+  function skyFrame(){
+    frame++;
+    const t=frame*.01;
+    cx.clearRect(0,0,W,H);
+
+    /* deep space */
+    const base=cx.createRadialGradient(W*.5,H*.4,0,W*.5,H*.4,Math.max(W,H));
+    base.addColorStop(0,'#060312');
+    base.addColorStop(.3,'#030110');
+    base.addColorStop(.7,'#01000a');
+    base.addColorStop(1,'#000005');
+    cx.fillStyle=base;cx.fillRect(0,0,W,H);
+
+    /* milky way */
+    drawMilkyWay();
+
+    /* nebulae */
+    nebulae.forEach(n=>{
+      const rw=n.rw||W*.4, rh=n.rh||H*.3;
+      const scaleY=rh/rw;
+      cx.save();
+      cx.translate(n.nx*W,n.ny*H);
+      cx.scale(1,scaleY);
+      const ng=cx.createRadialGradient(0,0,0,0,0,rw);
+      ng.addColorStop(0,`hsla(${n.h},55%,32%,${n.a*1.3})`);
+      ng.addColorStop(.45,`hsla(${n.h+15},45%,22%,${n.a*.7})`);
+      ng.addColorStop(.8,`hsla(${n.h-10},35%,15%,${n.a*.25})`);
+      ng.addColorStop(1,'transparent');
+      cx.fillStyle=ng;cx.beginPath();cx.arc(0,0,rw,0,Math.PI*2);cx.fill();
+      cx.restore();
+    });
+
+    /* galaxy smudges */
+    galaxies.forEach(g=>{
+      cx.save();
+      cx.translate(g.nx*W,g.ny*H);cx.rotate(g.rot);cx.scale(1,g.ry/g.rx);
+      const gg=cx.createRadialGradient(0,0,0,0,0,g.rx);
+      gg.addColorStop(0,`rgba(220,200,255,${g.a*2})`);
+      gg.addColorStop(.3,`rgba(180,160,230,${g.a})`);
+      gg.addColorStop(.7,`rgba(130,110,200,${g.a*.4})`);
+      gg.addColorStop(1,'transparent');
+      cx.fillStyle=gg;cx.beginPath();cx.arc(0,0,g.rx,0,Math.PI*2);cx.fill();
+      cx.restore();
+    });
+
+    drawMoon();
+
+    /* mouse ambient glow */
+    const mg=cx.createRadialGradient(mmx,mmy,0,mmx,mmy,280);
+    mg.addColorStop(0,'rgba(30,10,80,.07)');
+    mg.addColorStop(1,'transparent');
+    cx.fillStyle=mg;cx.fillRect(0,0,W,H);
+
+    /* stars — all layers */
+    [layer1,layer2,layer3,layer4,layer5].forEach((layer,li)=>{
+      const glowing=li>=2;
+      layer.forEach(s=>{
+        const tw=Math.sin(t*s.spd+s.phase);
+        const a=Math.max(0,s.aBase+tw*(s.aBase*.6));
+        const sz=s.r*(1+tw*.08);
+        cx.save();
+        if(glowing){
+          cx.shadowColor=s.col;
+          cx.shadowBlur=li===4?18:li===3?10:5;
+        }
+        cx.globalAlpha=a;
+        cx.fillStyle=s.col;
+        cx.beginPath();cx.arc(s.x*W,s.y*H,sz,0,Math.PI*2);cx.fill();
+        // cross flare for bright stars
+        if(li>=3){
+          const fl=li===4?14:8;
+          cx.globalAlpha=a*.25;
+          cx.strokeStyle=s.col;cx.lineWidth=.4;
+          cx.beginPath();cx.moveTo(s.x*W-fl,s.y*H);cx.lineTo(s.x*W+fl,s.y*H);cx.stroke();
+          cx.beginPath();cx.moveTo(s.x*W,s.y*H-fl);cx.lineTo(s.x*W,s.y*H+fl);cx.stroke();
+        }
+        cx.restore();
+      });
+    });
+
+    /* shooting stars */
+    spawnAuto();
+    for(let i=shoots.length-1;i>=0;i--){
+      const s=shoots[i];
+      const spd=Math.hypot(s.vx,s.vy);
+      const nx=s.vx/spd,ny=s.vy/spd;
+      // main tail
+      const sg=cx.createLinearGradient(s.x,s.y,s.x-nx*s.len,s.y-ny*s.len);
+      sg.addColorStop(0,s.col.replace('hsl','hsla').replace(')',`,${s.life})`));
+      sg.addColorStop(.3,s.col.replace('hsl','hsla').replace(')',`,${s.life*.5})`));
+      sg.addColorStop(1,'transparent');
+      cx.beginPath();cx.moveTo(s.x,s.y);cx.lineTo(s.x-nx*s.len,s.y-ny*s.len);
+      cx.strokeStyle=sg;cx.lineWidth=s.w*s.life*1.5;cx.globalAlpha=1;cx.stroke();
+      // head glow
+      const hg=cx.createRadialGradient(s.x,s.y,0,s.x,s.y,6);
+      hg.addColorStop(0,`rgba(255,255,255,${s.life})`);
+      hg.addColorStop(.5,`rgba(200,230,255,${s.life*.5})`);
+      hg.addColorStop(1,'transparent');
+      cx.fillStyle=hg;cx.beginPath();cx.arc(s.x,s.y,6,0,Math.PI*2);cx.fill();
+      cx.globalAlpha=1;
+      s.x+=s.vx;s.y+=s.vy;s.life-=s.decay;
+      if(s.life<=0||s.y>H||s.x>W)shoots.splice(i,1);
+    }
+
+    requestAnimationFrame(skyFrame);
+  }
+  skyFrame();
+})();
+
+/* ══════════════════════════════════════════
+   FALLING STAR CURSOR
+══════════════════════════════════════════ */
+(function(){
+  const cv=document.getElementById('cursor-canvas');
+  const cx=cv.getContext('2d');
+  function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight}
+  resize(); window.addEventListener('resize',resize);
+
+  let mx=window.innerWidth/2, my=window.innerHeight/2;
+  let prevMx=mx, prevMy=my;
+  let hovering=false;
+
+  /* PATH HISTORY — the falling star trail */
+  const path=[];
+  const PATH_MAX=80;
+
+  /* debris particles from the star */
+  const debris=[];
+
+  /* orbit embers */
+  const embers=Array.from({length:6},(_,i)=>({
+    angle:i*(Math.PI*2/6),
+    r:0,targetR:0,
+    speed:.055+Math.random()*.025,
+    size:.7+Math.random()*.6,
+    brightness:0.5+Math.random()*.5,
+  }));
+
+  /* click burst */
+  const bursts=[];
+
+  document.addEventListener('mousemove',e=>{
+    prevMx=mx; prevMy=my;
+    mx=e.clientX; my=e.clientY;
+
+    // add path point
+    path.push({x:mx,y:my,birth:Date.now()});
+    if(path.length>PATH_MAX)path.shift();
+
+    // emit debris on movement
+    const spd=Math.hypot(mx-prevMx,my-prevMy);
+    if(spd>2){
+      const count=Math.floor(spd/6)+1;
+      for(let i=0;i<Math.min(count,5);i++){
+        const ang=Math.atan2(my-prevMy,mx-prevMx)+Math.PI+(Math.random()-.5)*1.1;
+        const s=1.2+Math.random()*spd*.15;
+        debris.push({
+          x:mx+(Math.random()-0.5)*4,
+          y:my+(Math.random()-0.5)*4,
+          vx:Math.cos(ang)*s,vy:Math.sin(ang)*s-.8,
+          life:1,decay:.028+Math.random()*.025,
+          r:.5+Math.random()*1.4,
+          hue:40+Math.random()*30,sat:90+Math.random()*10,
+        });
+      }
+    }
+  });
+
+  document.querySelectorAll('a,button').forEach(el=>{
+    el.addEventListener('mouseenter',()=>hovering=true);
+    el.addEventListener('mouseleave',()=>hovering=false);
+  });
+
+  document.addEventListener('mousedown',()=>{
+    for(let i=0;i<30;i++){
+      const ang=Math.random()*Math.PI*2;
+      const s=2+Math.random()*6;
+      bursts.push({
+        x:mx,y:my,
+        vx:Math.cos(ang)*s,vy:Math.sin(ang)*s,
+        life:1,decay:.02+Math.random()*.015,
+        r:.8+Math.random()*2,
+        hue:30+Math.random()*50,
+      });
+    }
+  });
+
+  let frame=0;
+
+  /* draw the star head */
+  function drawStarHead(x,y,sz,alpha){
+    const spikes=hovering?6:4;
+    // outer atmosphere
+    const atm=cx.createRadialGradient(x,y,0,x,y,sz*5);
+    atm.addColorStop(0,`rgba(255,240,200,${alpha*.12})`);
+    atm.addColorStop(.4,`rgba(255,160,60,${alpha*.07})`);
+    atm.addColorStop(1,'transparent');
+    cx.fillStyle=atm;cx.beginPath();cx.arc(x,y,sz*5,0,Math.PI*2);cx.fill();
+
+    // mid glow
+    const mid=cx.createRadialGradient(x,y,0,x,y,sz*2);
+    mid.addColorStop(0,`rgba(255,255,220,${alpha*.8})`);
+    mid.addColorStop(.5,`rgba(255,200,80,${alpha*.5})`);
+    mid.addColorStop(1,`rgba(255,80,0,${alpha*.1})`);
+    cx.fillStyle=mid;cx.beginPath();cx.arc(x,y,sz*2,0,Math.PI*2);cx.fill();
+
+    // hot core
+    const core=cx.createRadialGradient(x,y,0,x,y,sz);
+    core.addColorStop(0,`rgba(255,255,255,${alpha})`);
+    core.addColorStop(.4,`rgba(255,248,200,${alpha*.95})`);
+    core.addColorStop(.8,`rgba(255,200,80,${alpha*.8})`);
+    core.addColorStop(1,`rgba(255,120,0,${alpha*.5})`);
+    cx.fillStyle=core;cx.beginPath();cx.arc(x,y,sz,0,Math.PI*2);cx.fill();
+
+    // diffraction spikes
+    for(let i=0;i<spikes;i++){
+      const ang=(i/spikes)*Math.PI*2+(frame*.007);
+      const slen=hovering?sz*9:sz*6;
+      const sg=cx.createLinearGradient(x,y,x+Math.cos(ang)*slen,y+Math.sin(ang)*slen);
+      sg.addColorStop(0,`rgba(255,245,190,${alpha*.6})`);
+      sg.addColorStop(.3,`rgba(255,210,100,${alpha*.25})`);
+      sg.addColorStop(1,'transparent');
+      cx.beginPath();cx.moveTo(x,y);
+      cx.lineTo(x+Math.cos(ang)*slen,y+Math.sin(ang)*slen);
+      cx.strokeStyle=sg;cx.lineWidth=hovering?1:.6;cx.stroke();
+    }
+  }
+
+  function renderFrame(){
+    frame++;
+    cx.clearRect(0,0,cv.width,cv.height);
+    const now=Date.now();
+
+    /* ─── FALLING STAR TRAIL ─── */
+    if(path.length>1){
+      for(let i=1;i<path.length;i++){
+        const pt=path[i];
+        const prev=path[i-1];
+        const frac=i/path.length;         // 0=tail, 1=head
+        const age=(now-pt.birth)/600;     // fade with time
+        const alpha=frac*(1-Math.min(age,1));
+        if(alpha<=0.01)continue;
+
+        // trail width tapers toward tail
+        const w=frac*(hovering?5:3.5);
+
+        // color: white-hot at head → orange → deep red at tail
+        const h=20+frac*20;
+        const l=50+frac*45;
+        const trailG=cx.createLinearGradient(prev.x,prev.y,pt.x,pt.y);
+        trailG.addColorStop(0,`hsla(${h-5},90%,${l-5}%,${alpha*.5})`);
+        trailG.addColorStop(1,`hsla(${h+5},95%,${l+5}%,${alpha})`);
+
+        cx.beginPath();cx.moveTo(prev.x,prev.y);cx.lineTo(pt.x,pt.y);
+        cx.strokeStyle=trailG;
+        cx.lineWidth=w;
+        cx.lineCap='round';
+        cx.stroke();
+
+        // glow halo around trail
+        if(frac>.5){
+          cx.beginPath();cx.moveTo(prev.x,prev.y);cx.lineTo(pt.x,pt.y);
+          cx.strokeStyle=`rgba(255,180,60,${alpha*.15})`;
+          cx.lineWidth=w*3.5;cx.stroke();
+        }
+      }
+    }
+
+    /* ─── DEBRIS / SPARKS ─── */
+    for(let i=debris.length-1;i>=0;i--){
+      const d=debris[i];
+      cx.save();
+      cx.globalAlpha=d.life*.8;
+      const dg=cx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*2.5);
+      dg.addColorStop(0,`hsla(${d.hue+15},${d.sat}%,90%,1)`);
+      dg.addColorStop(.5,`hsla(${d.hue},${d.sat}%,65%,.6)`);
+      dg.addColorStop(1,'transparent');
+      cx.fillStyle=dg;cx.beginPath();cx.arc(d.x,d.y,d.r*2.5,0,Math.PI*2);cx.fill();
+      cx.restore();
+      d.x+=d.vx;d.y+=d.vy;
+      d.vy+=.05;d.vx*=.97;d.vy*=.98;
+      d.life-=d.decay;
+      if(d.life<=0)debris.splice(i,1);
+    }
+
+    /* ─── ORBIT EMBERS ─── */
+    const targetR=hovering?22:15;
+    embers.forEach(e=>{
+      e.angle+=e.speed*(hovering?1.6:1);
+      e.r+=(targetR-e.r)*.08;
+      const ex=mx+Math.cos(e.angle)*e.r;
+      const ey=my+Math.sin(e.angle)*e.r;
+      const flicker=.4+Math.sin(frame*.08+e.angle)*0.35;
+      cx.save();
+      cx.globalAlpha=e.brightness*flicker*.8;
+      cx.shadowColor=`rgba(255,160,40,.9)`;
+      cx.shadowBlur=5;
+      cx.fillStyle=`hsl(${35+Math.random()*25},100%,82%)`;
+      cx.beginPath();cx.arc(ex,ey,e.size*(hovering?1.3:1),0,Math.PI*2);cx.fill();
+      cx.restore();
+    });
+
+    /* ─── BURST PARTICLES ─── */
+    for(let i=bursts.length-1;i>=0;i--){
+      const b=bursts[i];
+      cx.save();cx.globalAlpha=b.life;
+      const bg=cx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r*3);
+      bg.addColorStop(0,`hsla(${b.hue+20},100%,92%,1)`);
+      bg.addColorStop(.5,`hsla(${b.hue},100%,65%,.6)`);
+      bg.addColorStop(1,'transparent');
+      cx.fillStyle=bg;cx.beginPath();cx.arc(b.x,b.y,b.r*3,0,Math.PI*2);cx.fill();
+      cx.restore();
+      b.x+=b.vx;b.y+=b.vy;b.vy+=.04;b.vx*=.98;
+      b.life-=b.decay;if(b.life<=0)bursts.splice(i,1);
+    }
+
+    /* ─── STAR HEAD ─── */
+    drawStarHead(mx,my,hovering?5:3.8,1);
+
+    requestAnimationFrame(renderFrame);
+  }
+  renderFrame();
+})();
+
+/* ══ CARD TILT ══ */
+document.querySelectorAll('.mcard').forEach(card=>{
+  const inner=card.querySelector('.card-inner');
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    inner.style.transform=`translateY(-12px) scale(1.02) rotateY(${x*9}deg) rotateX(${-y*6}deg)`;
+  });
+  card.addEventListener('mouseleave',()=>inner.style.transform='');
+});
+
+/* ══ CARD MINI STARS ══ */
+document.querySelectorAll('.c-starfield').forEach(el=>{
+  const count=parseInt(el.dataset.stars||'18');
+  for(let i=0;i<count;i++){
+    const d=document.createElement('div');
+    d.className='cst';
+    const sz=(0.8+Math.random()*1.5)+'px';
+    Object.assign(d.style,{
+      width:sz,height:sz,
+      left:Math.random()*100+'%',
+      top:Math.random()*100+'%',
+      '--cd':(2+Math.random()*5)+'s',
+      '--cdl':(-Math.random()*4)+'s',
+    });
+    el.appendChild(d);
+  }
+});
+</script>
+</body>
+</html>
